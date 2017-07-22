@@ -22,10 +22,32 @@ public:
 	Computer & operator=(const Computer & rhs);
 
 	void print();
+
+	//因为静态成员函数参数之中不包含this指针
+	//
+	//所以在其内部不直接非静态数据成员以及成员函数
+	//只能访问静态数据成员和成员函数
+	static void printTotal()
+	{
+		//print();//error
+		//cout << "品牌:" << _brand << endl;//error
+		cout << "总价: "<< _totalPrice << endl;
+	}
+
+	static void printCompter(const Computer & com)
+	{
+		cout << "品牌:" << com._brand << endl;
+		cout << "价格:" << com._fprice << endl;
+	}
+
 private:
 	char * _brand;
 	float _fprice;
+	static float _totalPrice;
 };
+
+
+float Computer::_totalPrice = 0.0;
 
 Computer::Computer(const char * brand, float fprice)
 : _brand(new char[strlen(brand) + 1]())
@@ -33,23 +55,16 @@ Computer::Computer(const char * brand, float fprice)
 {
 	cout << "Computer(const char*, float)" << endl;
 	strcpy(_brand, brand);//深拷贝
+
+	_totalPrice += _fprice;
 }
 
 Computer::~Computer()
-{//析构函数的作用：做清理工作
+{
 	delete [] _brand;
 	cout << "~Computer()" << endl;
+	_totalPrice -= _fprice;
 }
-
-#if 0
-//系统提供的复制构造函数不再满足需要
-Computer::Computer(const Computer & rhs)
-: _brand(rhs._brand) //浅拷贝
-, _fprice(rhs._fprice)
-{
-	cout << "Computer(const Computer&)" << endl;
-}
-#endif
 
 Computer::Computer(const Computer & rhs)
 : _brand(new char[strlen(rhs._brand) + 1]()) //深拷贝
@@ -59,16 +74,6 @@ Computer::Computer(const Computer & rhs)
 	strcpy(_brand, rhs._brand);
 }
 
-
-//系统提供的赋值运算符函数是有问题的，不满足需要
-#if 0
-Computer & Computer::operator=(const Computer & rhs)
-{
-	_brand = rhs._brand;//浅拷贝
-	_fprice = rhs._fprice;
-	return *this;
-}
-#endif
 
 Computer & Computer::operator=(const Computer & rhs)
 {
@@ -91,26 +96,20 @@ void Computer::print()
 int main(void)
 {
 	Computer c1("Lenovo", 5000);
-	cout << "c1 = ";
-	c1.print();
+	//c1.print();
+	//c1.printCompter(c1);
+	Computer::printCompter(c1);//静态成员函数直接通过类名进行访问
+	Computer::printTotal();
 
-	//Computer c2 = c1;//执行复制构造函数
+	Computer c2("Mac", 10000);
 	//c2.print();
+	Computer::printCompter(c2);
+	Computer::printTotal();
 
-	Computer c3("Mac", 10000);
-	cout << "c3 = ";
-	c3.print();
-
-	c1 = c3;
-	//c1.operator=(c3);
-
-	cout << "c1 = ";
-	c1.print();
-	cout << "=====" << endl;
-
-	c1 = c1;//自复制
-	cout << "c1 = ";
-	c1.print();
+	Computer c3("ThinkPad", 7000);
+	//c3.print();
+	Computer::printCompter(c3);
+	Computer::printTotal();
 
 	return 0;
 }
